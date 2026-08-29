@@ -2,12 +2,12 @@ const chat = document.getElementById('chat');
 const input = document.getElementById('msg');
 const send = document.getElementById('send');
 
-send.onclick = () => {
-    const t = input.value.trim();
+send.onclick = async () => {
+    const question = input.value.trim();
 
-    if (!t) return;
+    if (!question) return;
 
-    add('YOU: ' + t, 'user');
+    add('YOU: ' + question, 'user');
     input.value = '';
 
     const processingMessage = add(
@@ -15,12 +15,28 @@ send.onclick = () => {
         'ai'
     );
 
-    setTimeout(() => {
-        processingMessage.innerText =
-            'J.A.R.V.I.S: Systems online. How may I assist you, Boss?';
+    try {
+        const response = await fetch('http://localhost:5000/chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                message: question
+            })
+        });
 
-        chat.scrollTop = chat.scrollHeight;
-    }, 1000);
+        const data = await response.json();
+
+        processingMessage.innerText =
+            'J.A.R.V.I.S: ' + data.response;
+
+    } catch (error) {
+        processingMessage.innerText =
+            'J.A.R.V.I.S: Unable to connect to the AI system.';
+    }
+
+    chat.scrollTop = chat.scrollHeight;
 };
 
 function add(text, who) {
