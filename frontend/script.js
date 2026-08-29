@@ -1,52 +1,37 @@
-const chat = document.getElementById('chat');
-const input = document.getElementById('msg');
-const send = document.getElementById('send');
+const chat=document.getElementById('chat');
 
-send.onclick = async () => {
-    const question = input.value.trim();
+const input=document.getElementById('msg');
 
-    if (!question) return;
+document.getElementById('send').onclick=()=>{
 
-    add('YOU: ' + question, 'user');
-    input.value = '';
+ const t=input.value.trim();
 
-    const processingMessage = add(
-        'J.A.R.V.I.S: Processing...',
-        'ai'
-    );
+ if(!t)return;
 
-    try {
-        const response = await fetch('http://localhost:5000/chat', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                message: question
-            })
-        });
+ add('YOU: '+t,'user');
 
-        const data = await response.json();
+ input.value='';
 
-        processingMessage.innerText =
-            'J.A.R.V.I.S: ' + data.response;
+ add('J.A.R.V.I.S: Processing...','ai');
 
-    } catch (error) {
-        processingMessage.innerText =
-            'J.A.R.V.I.S: Unable to connect to the AI system.';
-    }
+ setTimeout(()=>{
 
-    chat.scrollTop = chat.scrollHeight;
+ chat.lastChild.innerText='J.A.R.V.I.S: Systems online. How may I assist you, Boss?';
+
+ },1000);
+
 };
 
-function add(text, who) {
-    const d = document.createElement('div');
+function add(text,who){
 
-    d.className = 'msg ' + who;
-    d.innerText = text;
+ const d=document.createElement('div');
 
-    chat.appendChild(d);
-    chat.scrollTop = chat.scrollHeight;
+ d.className='msg '+who;
 
-    return d;
+ d.innerText=text;
+
+ chat.appendChild(d);
+
+ chat.scrollTop=chat.scrollHeight;
+
 }
