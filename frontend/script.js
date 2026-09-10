@@ -35,9 +35,7 @@ if (!API_KEY) {
 // account. If you get 404 NOT_FOUND, replace the model name
 // with one currently available to your account.
 
-const MODELS = [
-    "gemini-3.6-flash"
-];
+const MODELS = ["gemini-3.1-flash-lite"];
 
 
 // ============================================================
