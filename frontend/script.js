@@ -152,7 +152,7 @@ function speak(text) {
 
     // Voice settings
     utterance.rate = 1.05;
-    utterance.pitch = 0.85;
+    utterance.pitch = 0.05;
     utterance.volume = 1.0;
 
 
