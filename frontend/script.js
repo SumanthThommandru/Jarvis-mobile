@@ -98,105 +98,7 @@ if ("speechSynthesis" in window) {
 }
 
 
-// =========================================function speak(text) {
-
-    if (!text || !text.trim()) {
-        return;
-    }
-
-    if (!("speechSynthesis" in window)) {
-        console.warn("Text-to-Speech is not supported.");
-        return;
-    }
-
-    // Stop previous speech
-    stopSpeaking();
-
-    const utterance =
-        new SpeechSynthesisUtterance(text);
-
-    // ==============================
-    // ZIRA FEMALE VOICE SETTINGS
-    // ==============================
-    utterance.rate = 0.95;
-    utterance.pitch = 1.08;
-    utterance.volume = 1.0;
-
-    // ==============================
-    // FIND MICROSOFT ZIRA
-    // ==============================
-    const ziraVoice =
-        voices.find(voice => {
-
-            return (
-                voice.name &&
-                voice.name
-                    .toLowerCase()
-                    .includes("zira")
-            );
-        });
-
-    // ==============================
-    // FALLBACK TO ENGLISH FEMALE VOICE
-    // ==============================
-    const femaleVoice =
-        voices.find(voice => {
-
-            return (
-                voice.lang &&
-                voice.lang
-                    .toLowerCase()
-                    .startsWith("en") &&
-                /female|samantha|zira/i.test(voice.name)
-            );
-        });
-
-    // ==============================
-    // FINAL VOICE SELECTION
-    // ==============================
-    const englishVoice =
-        voices.find(voice => {
-
-            return (
-                voice.lang &&
-                voice.lang
-                    .toLowerCase()
-                    .startsWith("en")
-            );
-        });
-
-    utterance.voice =
-        ziraVoice ||
-        femaleVoice ||
-        englishVoice ||
-        null;
-
-    utterance.onstart = () => {
-
-        console.log(
-            "J.A.R.V.I.S started speaking."
-        );
-    };
-
-    utterance.onend = () => {
-
-        console.log(
-            "J.A.R.V.I.S finished speaking."
-        );
-    };
-
-    utterance.onerror = (event) => {
-
-        console.error(
-            "Speech error:",
-            event.error
-        );
-    };
-
-    speechSynthesis.speak(utterance);
-}
-
-===================
+// ============================================================
 // 7. STOP CURRENT J.A.R.V.I.S. SPEECH
 // ============================================================
 
@@ -223,6 +125,82 @@ function stopSpeaking() {
 // 8. J.A.R.V.I.S. SPEAK
 // ============================================================
 
+function speak(text) {
+
+    if (!text || !text.trim()) {
+        return;
+    }
+
+
+    if (!("speechSynthesis" in window)) {
+
+        console.warn(
+            "Text-to-Speech is not supported."
+        );
+
+        return;
+    }
+
+
+    // Stop previous speech
+    stopSpeaking();
+
+
+    const utterance =
+        new SpeechSynthesisUtterance(text);
+
+
+    // Voice settings
+    utterance.rate = 0.92;
+    utterance.pitch = 1.10;
+    utterance.volume = 1.0;
+
+
+    // Find English voice
+    const englishVoice =
+        voices.find(voice => {
+
+            return (
+                voice.lang &&
+                voice.lang
+                    .toLowerCase()
+                    .startsWith("en")
+            );
+        });
+
+
+    if (englishVoice) {
+        utterance.voice = englishVoice;
+    }
+
+
+    utterance.onstart = () => {
+
+        console.log(
+            "J.A.R.V.I.S started speaking."
+        );
+    };
+
+
+    utterance.onend = () => {
+
+        console.log(
+            "J.A.R.V.I.S finished speaking."
+        );
+    };
+
+
+    utterance.onerror = (event) => {
+
+        console.error(
+            "Speech error:",
+            event.error
+        );
+    };
+
+
+    speechSynthesis.speak(utterance);
+}
 
 
 // ============================================================
