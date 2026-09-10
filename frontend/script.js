@@ -56,61 +56,152 @@ async function askGemini(p){
 }
 
 // ===== 4. SPEECH RECOGNITION (వినడం) =====
-const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-const rec=new SR();
-rec.lang='en-US'; // Telugu కు 'te-IN'
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 
-rec.onresult=(e)=>{
-    const t=e.results[0][0].transcript;
-    add('YOU: '+t,'user');
-    askGemini(t);
+let rec = null;
+
+if (SR) {
+    rec = new SR();
+    rec.lang = 'en-US';
+    rec.continuous = false;
+    rec.interimResults = false;
+
+    rec.onresult = (e) => {
+        const t = e.results[0][0].transcript;
+
+        add('YOU: ' + t, 'user');
+
+        // Stop any previous JARVIS speech
+        speechSynthesis.cancel();
+
+        askGemini(t);
+    };
+
+    rec.onstart = () => {
+        // Stop JARVIS immediately when listening starts
+        speechSynthesis.cancel();
+
+        micBtn.innerText = 'LISTENING...';
+    };
+
+    rec.onend = () => {
+        micBtn.innerText = '🎙️';
+    };
+
+    rec.onerror = (e) => {
+        console.log('Speech recognition error:', e.error);
+        micBtn.innerText = '🎙️';
+    };
+}
+
+micBtn.onclick = () => {
+
+    // IMPORTANT:
+    // Stop previous JARVIS voice before accepting a new command
+    speechSynthesis.cancel();
+
+    if (rec) {
+        try {
+            rec.start();
+        } catch (e) {
+            console.log('Recognition already running');
+        }
+    }
 };
 
-micBtn.onclick=()=>{
-    rec.start();
-    micBtn.innerText='LISTENING...';
-};
-
-rec.onend=()=>{
-    micBtn.innerText='🎙️';
-};
 
 // ===== 5. TEXT-TO-SPEECH (మాట్లాడటం) =====
-let voices=[];
+let voices = [];
 
-function loadVoices(){
-    voices=speechSynthesis.getVoices();
+function loadVoices() {
+    voices = speechSynthesis.getVoices();
 }
 
 loadVoices();
-speechSynthesis.onvoiceschanged=loadVoices;
 
-function speak(t){
-    const u=new SpeechSynthesisUtterance(t);
+speechSynthesis.onvoiceschanged = loadVoices;
 
-    u.rate=1.05;
-    u.pitch=0.85;
 
-    const v=voices.find(v=>v.lang.startsWith('en'));
-    if(v) u.voice=v;
+function speak(t) {
+
+    // STOP OLD SPEECH FIRST
+    speechSynthesis.cancel();
+
+    // Small cleanup
+    if (!t || !t.trim()) return;
+
+    const u = new SpeechSynthesisUtterance(t);
+
+    u.rate = 1.05;
+    u.pitch = 0.85;
+    u.volume = 1.0;
+
+    // Select English voice
+    const v = voices.find(v =>
+        v.lang && v.lang.toLowerCase().startsWith('en')
+    );
+
+    if (v) {
+        u.voice = v;
+    }
 
     speechSynthesis.speak(u);
 }
 
-// ===== 6. TEXT SEND BUTTON =====
-document.getElementById('send').onclick=()=>{
-    const t=input.value.trim();
-    if(!t)return;
 
-    add('YOU: '+t,'user');
-    input.value='';
+// ===== 6. TEXT SEND BUTTON =====
+document.getElementById('send').onclick = () => {
+
+    const t = input.value.trim();
+
+    if (!t) return;
+
+    // Stop old speech when a new text command is sent
+    speechSynthesis.cancel();
+
+    add('YOU: ' + t, 'user');
+
+    input.value = '';
+
     askGemini(t);
 };
 
-function add(t,w){
-    const d=document.createElement('div');
-    d.className='msg '+w;
-    d.innerText=t;
+
+// ===== 7. GEMINI =====
+async function askGemini(p) {
+
+    add('J.A.R.V.I.S: Thinking...', 'ai');
+
+    try {
+
+        const reply = await callGemini(p);
+
+        chat.lastChild.innerText = 'J.A.R.V.I.S: ' + reply;
+
+        // Make sure old speech is stopped
+        speechSynthesis.cancel();
+
+        // Speak only the latest answer
+        speak(reply);
+
+    } catch (e) {
+
+        chat.lastChild.innerText =
+            'J.A.R.V.I.S: ERROR - ' + e.message;
+    }
+}
+
+
+// ===== 8. ADD MESSAGE =====
+function add(t, w) {
+
+    const d = document.createElement('div');
+
+    d.className = 'msg ' + w;
+
+    d.innerText = t;
+
     chat.appendChild(d);
-    chat.scrollTop=chat.scrollHeight;
+
+    chat.scrollTop = chat.scrollHeight;
 }
